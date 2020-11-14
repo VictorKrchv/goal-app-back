@@ -36,6 +36,7 @@ const PlanList = sequalize.define("plan", {
 
 Goal.belongsTo(User, { as: "author" });
 Goal.hasMany(PlanList);
+PlanList.belongsTo(Goal, { as: "goal" });
 
 module.exports = {
   Goal,

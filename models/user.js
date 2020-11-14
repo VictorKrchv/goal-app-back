@@ -1,22 +1,29 @@
 const Sequalize = require("sequelize");
 const sequalize = require("../utils/database");
 
-const user = sequalize.define("user", {
+const User = sequalize.define("user", {
   id: {
     primaryKey: true,
-    autoIncrement: true,
     allowNull: false,
-    type: Sequalize.INTEGER,
+    autoIncrement: true,
+    type: Sequalize.BIGINT,
+  },
+  provider: {
+    type: Sequalize.STRING,
+  },
+  name: {
+    type: Sequalize.STRING,
   },
   email: {
     unique: true,
     type: Sequalize.STRING,
-    allowNull: false,
   },
   hashedPassword: {
     type: Sequalize.STRING,
-    allowNull: false,
+  },
+  avatar: {
+    type: Sequalize.STRING,
   },
 });
 
-module.exports = user;
+module.exports = User;

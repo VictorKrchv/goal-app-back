@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const checkToken = require("../middlewares/checkToken");
+const goal = require("../models/goal");
 const { Goal, PlanList } = require("../models/goal");
 const User = require("../models/user");
 const router = Router();
@@ -8,7 +9,7 @@ router.get("/", async (req, res) => {
   try {
     const planList = await Goal.findAll({
       include: [
-        { model: User, as: "author", attributes: ["email", "id"] },
+        { model: User, as: "author", attributes: ["email", "id", "name"] },
         PlanList,
       ],
       attributes: {
@@ -27,7 +28,7 @@ router.get("/:id", async (req, res) => {
     const goal = await Goal.findOne({
       where: { id: req.params.id },
       include: [
-        { model: User, as: "author", attributes: ["email", "id"] },
+        { model: User, as: "author", attributes: ["email", "id", "name"] },
         PlanList,
       ],
       attributes: {
@@ -58,7 +59,10 @@ router.post("/", checkToken, async (req, res) => {
           goalId: goal.dataValues.id,
         }))
       ),
-      User.findOne({ where: { id: req.user.id } }),
+      User.findOne({
+        where: { id: req.user.id },
+        include: ["name", "id", "email"],
+      }),
     ]);
 
     res.status(201).json({
@@ -68,7 +72,7 @@ router.post("/", checkToken, async (req, res) => {
           name: plan.name,
           isComplete: false,
         })),
-        author: { id: user.id, email: user.email },
+        author: user,
         title,
         description,
         goalCompletion,
@@ -80,15 +84,21 @@ router.post("/", checkToken, async (req, res) => {
   }
 });
 
-router.put("/plan/:id", async (req, res) => {
+router.put("/plan/:id", checkToken, async (req, res) => {
   try {
-    await PlanList.update(
-      { isComplete: true },
-      { where: { id: req.params.id } }
-    );
-    res.status(200).json({ message: "Успешно" });
+    const { id } = req.params;
+    const plan = await PlanList.findOne({
+      where: { id },
+      include: [{ model: Goal, as: "goal" }],
+    });
+
+    if (plan && plan.goal.authorId === req.user.id) {
+      plan.isComplete = true;
+      await plan.save();
+      res.status(200).json({ message: "Успешно" });
+    }
+    res.status(404);
   } catch (e) {
-    console.log(e);
     res.status(500).json({ message: "Server error" });
   }
 });
