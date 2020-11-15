@@ -12,9 +12,5 @@ const sequelize = new Sequilize(
     dialect: "mysql",
   }
 );
-// User.hasMany(Session, { foreignKey: "id" });
-// Session.belongsTo(User, {
-//   foreignKey: "userId",
-//   targetKey: "id",
-// });
+
 module.exports = sequelize;

@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
     res.status(200).json({ data: planList });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -39,7 +39,7 @@ router.get("/:id", async (req, res) => {
     res.status(200).json({ data: goal });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 });
 
@@ -80,7 +80,7 @@ router.post("/", checkToken, async (req, res) => {
     });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -92,14 +92,14 @@ router.put("/plan/:id", checkToken, async (req, res) => {
       include: [{ model: Goal, as: "goal" }],
     });
 
-    if (plan && plan.goal.authorId === req.user.id) {
-      plan.isComplete = true;
-      await plan.save();
-      res.status(200).json({ message: "Успешно" });
+    if (!plan && plan.goal.authorId !== req.user.id) {
+      res.status(404).json({ error: "Error data" });
     }
-    res.status(404);
+    plan.isComplete = true;
+    await plan.save();
+    res.status(200).json({ message: "Успешно" });
   } catch (e) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
